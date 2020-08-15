@@ -93,5 +93,15 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+				<plugins>
+			<plugin>
+   				<groupId>org.apache.maven.plugins</groupId>
+            	<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<includeSystemScope>true</includeSystemScope>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
+	
 </project>

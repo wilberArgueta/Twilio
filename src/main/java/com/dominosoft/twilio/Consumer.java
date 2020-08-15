@@ -7,12 +7,13 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import org.apache.commons.codec.binary.Base64;
 
 import com.dominosoft.twilio.model.Message;
+import com.dominosoft.twilio.model.Response;
 
 public class Consumer {
 
@@ -45,7 +46,7 @@ public class Consumer {
 		return Consumer.build(_message);
 	}
 
-	public void send() throws IOException {
+	public Response send() throws IOException {
 		try {
 			System.out.println("Set Data: " + this.message.getDataEncode());
 			byte paramBody[] = this.message.getDataEncode().getBytes(StandardCharsets.UTF_8);
@@ -75,13 +76,10 @@ public class Consumer {
 			}
 			in.close();
 
-			System.out.println(content.toString());
-			System.out.println("exit");
+			return new Response(true, content.toString());
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println(e.getMessage());
-			System.out.println("Error..");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(this.connection.getErrorStream()));
 			StringBuilder content = new StringBuilder();
 			String line;
@@ -90,8 +88,8 @@ public class Consumer {
 				content.append(line);
 				content.append(System.lineSeparator());
 			}
+			return new Response(false, content.toString());
 
-			System.out.println(content.toString());
 		}
 	}
 
@@ -110,7 +108,7 @@ public class Consumer {
 
 	private String authSet() {
 		String auth = Twilio.accountSID + ":" + Twilio.authToken;
-		byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.UTF_8));
+		byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
 		System.out.println("Set AUTH=" + "Basic " + new String(encodedAuth));
 		return "Basic " + new String(encodedAuth);
 	}
