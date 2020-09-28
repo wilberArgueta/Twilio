@@ -1,27 +1,16 @@
 package com.dominosoft.twilio;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import javax.net.ssl.HttpsURLConnection;
-
-
+import com.dominosoft.requests.connections.Connection;
 import com.dominosoft.twilio.model.Message;
 import com.dominosoft.twilio.model.Response;
 
 public class Consumer {
 
-	private URL urlConnection;
-	private HttpsURLConnection connection;
 	private Message message;
 	private final String API_WA_URL = "https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json";
-	private final String POST = "POST";
 	private static Consumer consumer = null;
 
 	public static Consumer build(Message message) {
@@ -46,51 +35,26 @@ public class Consumer {
 		return Consumer.build(_message);
 	}
 
-	public Response send() throws IOException {
+	public Response send() {
+
 		try {
-			System.out.println("Set Data: " + this.message.getDataEncode());
 			byte paramBody[] = this.message.getDataEncode().getBytes(StandardCharsets.UTF_8);
-			this.urlConnection = getUrl();
+			System.out.println("data lenth =" + paramBody.length);
+			com.dominosoft.requests.model.Response<String> response = Connection
+					.build(String.format(API_WA_URL, Twilio.accountSID)).https().post()
+					.addHeader("Authorization", authSet())
+					.addHeader("Content-Type", "application/x-www-form-urlencoded").addHeader("Accept", "*").make()
+					.send(paramBody).responseString();
 
-			this.connection = (HttpsURLConnection) this.urlConnection.openConnection();
-			this.connection.setRequestMethod(POST);
-			this.connection.setRequestProperty("Authorization", authSet());
-			this.connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-			this.connection.setRequestProperty("Accept", "*");
-			this.connection.setFixedLengthStreamingMode(paramBody.length);
-			this.connection.setDoOutput(true);
-			this.connection.setDoInput(true);
-
-			// Enviar la informacion en form-urlencoded
-			DataOutputStream writer = new DataOutputStream(this.connection.getOutputStream());
-			writer.write(paramBody);
-			writer.flush();
-			writer.close();
-
-			// Leer la respuesta del servidor
-			BufferedReader in = new BufferedReader(new InputStreamReader(this.connection.getInputStream()));
-			String inputLine;
-			StringBuffer content = new StringBuffer();
-			while ((inputLine = in.readLine()) != null) {
-				content.append(inputLine);
-			}
-			in.close();
-
-			return new Response(true, content.toString());
-
+			if (response.isSuccess())
+				return new Response(true, response.getExtra());
+			else
+				return new Response(false, response.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(this.connection.getErrorStream()));
-			StringBuilder content = new StringBuilder();
-			String line;
-
-			while ((line = reader.readLine()) != null) {
-				content.append(line);
-				content.append(System.lineSeparator());
-			}
-			return new Response(false, content.toString());
-
+			return new Response(false, e.getMessage());
 		}
+
 	}
 
 	public Message getMessage() {
@@ -99,11 +63,6 @@ public class Consumer {
 
 	public void setMessage(Message message) {
 		this.message = message;
-	}
-
-	private URL getUrl() throws MalformedURLException {
-
-		return new URL(String.format(API_WA_URL, Twilio.accountSID));
 	}
 
 	private String authSet() {

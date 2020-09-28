@@ -38,6 +38,11 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.11</version>
 		</dependency>
+		<dependency>
+			<groupId>com.dominosoft</groupId>
+			<artifactId>requests</artifactId>
+			<version>0.0.1</version>
+		</dependency>
 
 
 		<dependency>
@@ -93,15 +98,15 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-				<plugins>
+		<plugins>
 			<plugin>
-   				<groupId>org.apache.maven.plugins</groupId>
-            	<artifactId>maven-compiler-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<includeSystemScope>true</includeSystemScope>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>

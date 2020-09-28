@@ -12,7 +12,6 @@ public class Message {
 	private String message;
 
 	public Message() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public Message(String fromNumber, String toNumber, String message) {
